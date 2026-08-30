@@ -1,0 +1,55 @@
+# What is tracked, and why the exclusions below are what they are.
+#
+# TRACKED: notebooks/*.ipynb (a clone is unreadable without them), src/*.py, spec/, scripts/,
+# tests/ and requirements.txt.
+#
+# THE TRACKED NOTEBOOKS ARE INTERNAL RUN RECORDS. They declare PUBLIC_NOTEBOOK = False and hold
+# the stored output of the internal run, which is what makes them worth reading. They are not
+# publication-ready. A public copy is a SEPARATE file written by
+# scripts/make_public_notebooks.py, which declares the flag True and retains stored output only
+# in the cells spec/public_notebook_cells.json names explicitly; every other cell is cleared.
+#
+# NOT TRACKED: anything that resolves or holds cohort data, anything a run produced, and
+# anything local to one machine. MCS Sweep 6 is UKDS Safeguarded Tier 1a and git history does
+# not forget, so the rule is to exclude by default and add deliberately.
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Editor, OS and assistant state
+.DS_Store
+.claude/
+.ipynb_checkpoints/
+
+# Patch machinery. Backups and temporary siblings written beside a notebook while an edit is
+# applied; none belongs in history.
+*.before_*
+*.patch_tmp
+*.internal_flag_tmp
+*.wording_tmp
+
+# Configured locations. `paths.json` names the restricted data roots on one machine; ship an
+# example instead of the real file.
+src/paths.json
+
+# Run products. Everything a run generates is written below $THESIS_WORK_DIR, so none of these
+# names should ever appear here. They are ignored anyway, with no exception for any file type:
+# a figure or a LaTeX fragment is a generated result like any other, and an exception is what
+# lets one back in. Candidates await disclosure review and are never repository files.
+outputs/
+publication_outputs/
+publication_candidates/
+
+# Cohort data, fitted models and person-level scores. Restricted by licence and by grain.
+data/
+models/
+scores/
+tests/
+
+# Environments
+.env
+.venv/
+venv/
+

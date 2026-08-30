@@ -1,0 +1,50 @@
+# requirements.txt — MCS<->YRBS harmonisation and transfer pipeline
+#
+# Python 3.12.13 via pyenv, no virtualenv. `pip install -r requirements.txt`.
+#
+# Version policy: a version is pinned as a floor only where it was read from a
+# working environment with importlib.metadata. Anything that could not be read is
+# marked UNVERIFIED and left unconstrained rather than guessed at. The observed
+# versions of the seven that matter are also recorded at runtime in
+# $THESIS_WORK_DIR/tables/s3_library_versions.csv, which is what the manuscript's §V-A cites.
+
+# ---- core ----
+pandas>=2.0            # observed 3.0.3
+numpy>=1.24            # observed 2.4.6
+scikit-learn>=1.3,<1.10
+# ^ CEILING IS LOAD-BEARING, not caution. sklearn 1.10 removes `penalty=`, and `l1_ratio`
+# defaults to 0.0 (= pure L2), so every L1 logistic in this pipeline would silently become L2
+# with no warning. Verified on 1.9.0 that `penalty='l1'` still yields a genuine L1 fit —
+# 37 of 40 coefficients zero, identical to l1_ratio=1. See src/models.py.
+# To lift the pin: switch the estimators to `l1_ratio` and re-run that check.
+#                       # observed 1.9.0
+xgboost>=2.0           # observed 3.3.0
+pyarrow>=12.0          # observed 24.0.0
+pytest>=7.0            # observed 9.1.1
+
+# ---- the model families the nine-family battery needs ----
+catboost>=1.2.10       # observed 1.2.10; also in s3_library_versions.csv
+lightgbm>=4.6.0        # observed 4.6.0; also in s3_library_versions.csv
+
+# ---- imported throughout ----
+scipy>=1.17.1          # observed 1.17.1; imported by 3 src modules (expit/logit, brentq, kendalltau)
+matplotlib>=3.11.0     # observed 3.11.0; the two figure-drawing notebooks and the ventile cell
+joblib>=1.5.3          # observed 1.5.3; imported directly rather than only through
+                       # scikit-learn, which pulls it in transitively. A direct import is a
+                       # declared dependency.
+
+# ---- needed only by the two rejected methods ----
+# Optimal-transport feature alignment and a TabPFN tenth family were both tried and both
+# rejected; the non-surviving-methods appendix reports them. Nothing in this repository
+# imports either package, and they are pinned so that an environment built from this file
+# can still run the rejected methods if a reader wants to reproduce the negative result.
+POT>=0.9.7             # observed 0.9.7; import name is `ot`. Optimal-transport alignment only.
+tabpfn>=8.0.8          # observed 8.0.8. The TabPFN tenth family only.
+
+# ---- IOTF weight-status reference tables: resolved ----
+# The IOTF (Cole 2000/2012) cutoffs are supplied by hand in src/recode_yrbs.py — no
+# growth-reference package is needed, so none is listed.
+
+# ---- forward-compatibility note ----
+# pandas 3.x changes `.replace()` downcasting behaviour; recode_utils.clean_mcs relies on
+# the current semantics. Re-check it before moving the pandas floor past the observed 3.0.x.
